@@ -40,6 +40,7 @@ EXT_JAVA = ".java"
 EXT_CLASS = ".class"
 EXT_CPP = ".cpp"
 EXT_H = ".h"
+EXT_H_UPPER = ".H"
 EXT_HPP = ".hpp"
 EXT_CC = ".cc"
 EXT_CXX = ".cxx"
@@ -50,6 +51,7 @@ EXT_CPPM = ".cppm"
 EXT_CCM = ".ccm"
 EXT_MXX = ".mxx"
 EXT_C = ".c"
+EXT_C_UPPER = ".C"
 EXT_PHP = ".php"
 EXT_LUA = ".lua"
 EXT_CS = ".cs"
@@ -78,10 +80,11 @@ RS_EXTENSIONS = (EXT_RS,)
 GO_EXTENSIONS = (EXT_GO,)
 SCALA_EXTENSIONS = (EXT_SCALA, EXT_SC)
 JAVA_EXTENSIONS = (EXT_JAVA,)
-C_EXTENSIONS = (EXT_C,)
+C_EXTENSIONS = (EXT_C, EXT_C_UPPER)
 CPP_EXTENSIONS = (
     EXT_CPP,
     EXT_H,
+    EXT_H_UPPER,
     EXT_HPP,
     EXT_CC,
     EXT_CXX,
