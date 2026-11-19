@@ -96,7 +96,8 @@ Two things decide whether expansion actually happens, and both fail quietly (the
 
 ## Limitations
 
-- Uses pcpp (pure-Python); complex token-pasting (`##`) and variadic macros may not expand correctly.
-- Line numbers in the indexed output refer to the expanded source, not the original. For simple calling-convention macros that expand to nothing, line numbers stay accurate.
-- Only `.c` (and `.C`) files are preprocessed; headers are not indexed through the preprocessor, although their contents are expanded into each `.c` file that includes them.
+- Only the `.c` file's own lines are indexed. Macros in them are expanded, each expanded line is put back on the line it came from, and the text of included headers is dropped, so a header's declarations are never indexed as part of every file that includes it. Line numbers match the source on disk; columns on a line that held a macro can differ.
+- A macro call that spans several lines is joined onto its first line.
+- Only `.c` (and `.C`) files are preprocessed. Headers are indexed from their own raw source.
+- If pcpp fails on a file, or its output never names the file, the raw source (or the full expansion) is indexed instead. Both are logged at debug level only.
 - After changing any of these settings, run `cgr delete-project --repo-path <repo>` (removes that one project and its hash cache) and index it again, so every C file is parsed under the new configuration. Avoid `--clean` for this: it deletes every project in the shared graph.

@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import io
+import os
+import re
 from pathlib import Path
 
 from loguru import logger
+
+_LINE_MARKER = re.compile(r'^#line (\d+) "(.*)"$')
 
 
 class CPreprocessor:
@@ -40,7 +44,7 @@ class CPreprocessor:
                     raise OutputDirective(Action.IgnoreAndPassThrough)
 
             pp = _PP()
-            pp.line_directive = None
+            pp.line_directive = "#line"
 
             for path in self.include_dirs:
                 pp.add_path(str(path))
@@ -53,7 +57,9 @@ class CPreprocessor:
 
             output = io.StringIO()
             pp.write(output)
-            return output.getvalue().encode("utf-8")
+            return _main_file_lines(
+                output.getvalue(), str(filepath), source_text.count("\n") + 1
+            ).encode("utf-8")
 
         except Exception:
             logger.debug(
@@ -135,3 +141,47 @@ def _parse_compile_commands(cc_json: Path) -> list[Path]:
     except Exception as exc:
         logger.debug("Could not parse compile_commands.json: {}", exc)
     return result
+
+
+def _main_file_lines(expanded: str, main_file: str, line_count: int) -> str:
+    """Keep only the main file's expanded lines, each on its original line.
+
+    pcpp writes the whole translation unit, every included header pasted in,
+    with `#line N "file"` markers. Parsing that text would index each header's
+    declarations once per including file, and every line number would point
+    into the expanded text. Placing each of the main file's lines back at the
+    line its marker names keeps line numbers true to the source on disk, and
+    drops header text entirely. Lines the preprocessor folded together (a
+    macro call spanning lines) land on the first of them.
+    """
+    # pcpp spells a marker's path the way it found the file: absolute for the
+    # path it was given, relative to the working directory when the file is
+    # reached again through an include directory. Compare resolved paths.
+    main_real = os.path.realpath(main_file)
+    resolved: dict[str, bool] = {}
+    lines = [""] * line_count
+    in_main = True
+    seen_main = False
+    line_no = 1
+    for text in expanded.splitlines():
+        marker = _LINE_MARKER.match(text)
+        if marker:
+            line_no = int(marker.group(1))
+            name = marker.group(2)
+            if name not in resolved:
+                resolved[name] = os.path.realpath(name) == main_real
+            in_main = resolved[name]
+            continue
+        if in_main and text.strip():
+            seen_main = True
+            index = line_no - 1
+            if index >= len(lines):
+                lines.extend([""] * (index + 1 - len(lines)))
+            lines[index] = f"{lines[index]} {text}" if lines[index] else text
+        line_no += 1
+    if not seen_main:
+        logger.debug(
+            "pcpp markers never named {}; indexing the full expansion", main_file
+        )
+        return expanded
+    return "\n".join(lines) + "\n"
