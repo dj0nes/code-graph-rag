@@ -59,6 +59,7 @@ from .parser_fingerprint import compute_parser_fingerprint
 from .parser_loader import COMBINED_FUNC_CLASS_IMPORT_QUERIES
 from .parsers import utils as parser_utils
 from .parsers.ast_grep_tier import AstGrepTier
+from .parsers.c_preprocessor import CPreprocessor
 from .parsers.contract_linking import link_contracts
 from .parsers.cpp.preproc_recovery import parse_with_preproc_recovery
 from .parsers.cpp_frontend import (
@@ -1840,6 +1841,7 @@ class GraphUpdater:
         self._delombok_stale_keys: set[str] = set()
         self._delombok_state_candidate: dict = _EMPTY_DELOMBOK_STATE.copy()
         self.exclude_paths = exclude_paths
+        self.c_preprocessor = CPreprocessor.from_settings(repo_path)
         # None defers to the CGR_SKIP_EMBEDDINGS setting so env-configured
         # callers (MCP, workspace sync) opt out without a CLI flag.
         self.skip_embeddings = (
@@ -1957,6 +1959,7 @@ class GraphUpdater:
             unignore_paths=self.unignore_paths,
             exclude_paths=self.exclude_paths,
             capture=self.capture,
+            c_preprocessor=self.c_preprocessor,
         )
         # A file's captures pin its tree, so they leave the moment the AST
         # cache evicts it; Pass 3 recomputes absent captures from the tree it
@@ -5561,7 +5564,7 @@ class GraphUpdater:
         ):
             return None
         tree = parse_with_preproc_recovery(
-            parser, grammar_bytes(data, language, path), language
+            parser, grammar_bytes(data, language, path, self.c_preprocessor), language
         )
         return interface_fingerprint(tree.root_node, language)
 
@@ -6085,7 +6088,9 @@ class GraphUpdater:
             # its plain parse (issue #3180).
             tree = parse_with_preproc_recovery(
                 parser,
-                grammar_bytes(file_bytes, language, self.repo_path / key),
+                grammar_bytes(
+                    file_bytes, language, self.repo_path / key, self.c_preprocessor
+                ),
                 language,
             )
             captures = sorted_captures(QueryCursor(query), tree.root_node)
@@ -8889,7 +8894,9 @@ class GraphUpdater:
             if parser is None:
                 continue
             tree = parse_with_preproc_recovery(
-                parser, grammar_bytes(file_bytes, language, filepath), language
+                parser,
+                grammar_bytes(file_bytes, language, filepath, self.c_preprocessor),
+                language,
             )
             root_node = tree.root_node
             size = root_node.end_byte
@@ -9061,7 +9068,7 @@ class GraphUpdater:
             return None
         # Transcoded exactly as the first parse was, or a declared-encoding
         # file's call pass would see names its definitions do not carry.
-        parsed = grammar_bytes(file_bytes, language, file_path)
+        parsed = grammar_bytes(file_bytes, language, file_path, self.c_preprocessor)
         root_node = parse_with_preproc_recovery(parser, parsed, language).root_node
         if language == cs.SupportedLanguage.SQL:
             # The reload is the tree the call pass now walks, so its DDL must

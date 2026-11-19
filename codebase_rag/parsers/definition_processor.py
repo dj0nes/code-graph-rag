@@ -67,6 +67,7 @@ from .utils import (
 if TYPE_CHECKING:
     from ..services import IngestorProtocol
     from ..types_defs import LanguageQueries
+    from .c_preprocessor import CPreprocessor
     from .handlers import LanguageHandler
     from .import_processor import ImportProcessor
 from .io_access import FLOW_REGISTERED_LANGUAGES
@@ -112,8 +113,10 @@ class DefinitionProcessor(
         flow_capture_enabled: bool = False,
         exclude_paths: frozenset[str] | None = None,
         unignore_paths: frozenset[str] | None = None,
+        c_preprocessor: CPreprocessor | None = None,
     ):
         super().__init__()
+        self.c_preprocessor = c_preprocessor
         self.ingestor = ingestor
         self.repo_path = repo_path
         self.project_name = project_name
@@ -807,7 +810,9 @@ class DefinitionProcessor(
                 logger.warning(ls.DEF_NO_PARSER.format(language=language))
                 return None
             tree = parse_with_preproc_recovery(
-                parser, grammar_bytes(source_bytes, language, file_path), language
+                parser,
+                grammar_bytes(source_bytes, language, file_path, self.c_preprocessor),
+                language,
             )
             root_node = tree.root_node
             pre_combined_captures = None

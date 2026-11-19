@@ -1147,6 +1147,20 @@ def _run_updater_deferring_interrupt(
     return None
 
 
+def _apply_c_preprocess_options(
+    c_preprocess: bool, c_include_dir: list[str] | None, c_define: list[str] | None
+) -> None:
+    """Fold the --c-* flags into the settings every GraphUpdater reads."""
+    if c_preprocess:
+        settings.C_PREPROCESS = True
+    if c_include_dir:
+        settings.C_INCLUDE_DIRS = ",".join(
+            d for d in (settings.C_INCLUDE_DIRS, *c_include_dir) if d
+        )
+    if c_define:
+        settings.C_DEFINES = ",".join(d for d in (settings.C_DEFINES, *c_define) if d)
+
+
 def _run_graph_sync(
     repo: Path,
     project_name: str,
@@ -1490,7 +1504,23 @@ def start(
         "--workspace",
         help=ch.HELP_WORKSPACE,
     ),
+    c_preprocess: bool = typer.Option(
+        False,
+        "--c-preprocess",
+        help="Expand C macros with pcpp before parsing .c files (needs the c-preprocess extra). Same as CGR_C_PREPROCESS=1.",
+    ),
+    c_include_dir: list[str] | None = typer.Option(
+        None,
+        "--c-include-dir",
+        help="Extra include directory for --c-preprocess, relative to the repo root. Repeatable.",
+    ),
+    c_define: list[str] | None = typer.Option(
+        None,
+        "--c-define",
+        help="Macro definition for --c-preprocess, e.g. BR_RESIDENT_ENTRY=. Repeatable.",
+    ),
 ) -> None:
+    _apply_c_preprocess_options(c_preprocess, c_include_dir, c_define)
     app_context.session.confirm_edits = not no_confirm
     app_context.session.load_cgr_instructions = not no_instructions
 
@@ -1634,7 +1664,23 @@ def index(
         "--interactive-setup",
         help=ch.HELP_INTERACTIVE_SETUP,
     ),
+    c_preprocess: bool = typer.Option(
+        False,
+        "--c-preprocess",
+        help="Expand C macros with pcpp before parsing .c files (needs the c-preprocess extra). Same as CGR_C_PREPROCESS=1.",
+    ),
+    c_include_dir: list[str] | None = typer.Option(
+        None,
+        "--c-include-dir",
+        help="Extra include directory for --c-preprocess, relative to the repo root. Repeatable.",
+    ),
+    c_define: list[str] | None = typer.Option(
+        None,
+        "--c-define",
+        help="Macro definition for --c-preprocess, e.g. BR_RESIDENT_ENTRY=. Repeatable.",
+    ),
 ) -> None:
+    _apply_c_preprocess_options(c_preprocess, c_include_dir, c_define)
     repo_to_index = _resolve_and_validate_repo(repo_path)
     _info(style(cs.CLI_MSG_INDEXING_AT.format(path=repo_to_index), cs.Color.GREEN))
 

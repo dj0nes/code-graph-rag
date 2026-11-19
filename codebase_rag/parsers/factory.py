@@ -10,6 +10,7 @@ from ..types_defs import (
     LanguageQueries,
     SimpleNameLookup,
 )
+from .c_preprocessor import CPreprocessor
 from .call_processor import CallProcessor
 from .definition_processor import DefinitionProcessor
 from .import_processor import ImportProcessor
@@ -29,6 +30,7 @@ class ProcessorFactory:
         "unignore_paths",
         "exclude_paths",
         "capture",
+        "c_preprocessor",
         "module_qn_to_file_path",
         "_import_processor",
         "_structure_processor",
@@ -50,6 +52,7 @@ class ProcessorFactory:
         unignore_paths: frozenset[str] | None = None,
         exclude_paths: frozenset[str] | None = None,
         capture: CaptureSelection | None = None,
+        c_preprocessor: CPreprocessor | None = None,
     ) -> None:
         self.ingestor = ingestor
         self.repo_path = repo_path
@@ -61,6 +64,7 @@ class ProcessorFactory:
         self.unignore_paths = unignore_paths
         self.exclude_paths = exclude_paths
         self.capture = capture if capture is not None else ALL_ENABLED
+        self.c_preprocessor = c_preprocessor
 
         self.module_qn_to_file_path: dict[str, Path] = {}
         self._func_class_captures_cache: dict[Path, dict] = {}
@@ -147,6 +151,7 @@ class ProcessorFactory:
                 ),
                 exclude_paths=self.exclude_paths,
                 unignore_paths=self.unignore_paths,
+                c_preprocessor=self.c_preprocessor,
             )
         return self._definition_processor
 

@@ -119,6 +119,9 @@ cgr start --repo-path /path/to/repo [OPTIONS]
 | `--no-embeddings` | Do not generate semantic embeddings during sync. Graph nodes and relationships are still updated. Equivalent env: CGR_SKIP_EMBEDDINGS=1. |
 | `--projects` | Limit queries to comma-separated project names. Overrides --project-name; defaults to the selected repository or workspace. |
 | `--workspace` | Query every project defined in workspace NAME. |
+| `--c-preprocess` | Expand C macros with pcpp before parsing .c files (needs the c-preprocess extra). Same as CGR_C_PREPROCESS=1. |
+| `--c-include-dir` | Extra include directory for --c-preprocess, relative to the repo root. Repeatable. |
+| `--c-define` | Macro definition for --c-preprocess, e.g. BR_RESIDENT_ENTRY=. Repeatable. |
 <!-- /SECTION:cli_options_start -->
 
 `--clean` asks for confirmation before it deletes other projects. When it runs
@@ -322,6 +325,9 @@ cgr index -o ./index-output --repo-path ./my-project
 | `--exclude` | Exclude paths matching PATTERN from indexing. Repeat the option to add patterns. |
 | `--capture` | Capture GROUP on top of the defaults (structure, calls, types, imports). Opt-in groups: io, findings, glosses, parameters, fields, enum_variants, constants. +NAME adds and -NAME drops a GROUP or a relationship type such as OVERRIDES; all or none replaces the selection, so none first captures only what follows (none,structure). Repeatable or comma-separated; later values override CGR_CAPTURE. An unknown group or type is an error. |
 | `--interactive-setup` | Choose which detected directories remain included. |
+| `--c-preprocess` | Expand C macros with pcpp before parsing .c files (needs the c-preprocess extra). Same as CGR_C_PREPROCESS=1. |
+| `--c-include-dir` | Extra include directory for --c-preprocess, relative to the repo root. Repeatable. |
+| `--c-define` | Macro definition for --c-preprocess, e.g. BR_RESIDENT_ENTRY=. Repeatable. |
 <!-- /SECTION:cli_options_index -->
 
 ![cgr index -o ./index-output --repo-path ./itsdangerous writing a protobuf index and provenance manifest](../assets/demos/cli-index.gif)

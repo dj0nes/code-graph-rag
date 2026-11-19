@@ -507,6 +507,13 @@ class AppConfig(BaseSettings):
     EMBEDDING_MAX_LENGTH: int = 512
     EMBEDDING_PROGRESS_INTERVAL: int = 10
     SKIP_EMBEDDINGS: bool = Field(False, validation_alias="CGR_SKIP_EMBEDDINGS")
+    # Expand C macros with pcpp before tree-sitter parses a .c file, so
+    # calling-convention and name-building macros resolve to real names.
+    C_PREPROCESS: bool = Field(False, validation_alias="CGR_C_PREPROCESS")
+    # Comma-separated include dirs (relative to the repo root) and
+    # NAME=VALUE defines, used only when C_PREPROCESS is on.
+    C_INCLUDE_DIRS: str = Field("", validation_alias="CGR_C_INCLUDE_DIRS")
+    C_DEFINES: str = Field("", validation_alias="CGR_C_DEFINES")
     EMBEDDING_DEVICE: cs.EmbeddingDevice | None = Field(
         None, validation_alias="CGR_EMBEDDING_DEVICE"
     )

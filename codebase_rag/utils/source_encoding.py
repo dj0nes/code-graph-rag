@@ -19,11 +19,15 @@ from __future__ import annotations
 import codecs
 import re
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from loguru import logger
 
 from .. import constants as cs
 from .. import logs as ls
+
+if TYPE_CHECKING:
+    from ..parsers.c_preprocessor import CPreprocessor
 
 _CODING_COOKIE = re.compile(cs.PY_CODING_COOKIE_PATTERN)
 _BLANK_OR_COMMENT_LINE = re.compile(cs.PY_CODING_BLANK_LINE_PATTERN)
@@ -203,7 +207,10 @@ def python_source_view(
 
 
 def grammar_bytes(
-    source: bytes, language: cs.SupportedLanguage | None, path: Path
+    source: bytes,
+    language: cs.SupportedLanguage | None,
+    path: Path,
+    c_preprocessor: CPreprocessor | None = None,
 ) -> bytes:
     """The bytes to hand tree-sitter for `source`.
 
@@ -217,7 +224,9 @@ def grammar_bytes(
     """
     if language != cs.SupportedLanguage.PYTHON:
         if (wide := decode_wide_source(source, path)) is not None:
-            return wide.encode(cs.ENCODING_UTF8, errors="surrogatepass")
+            source = wide.encode(cs.ENCODING_UTF8, errors="surrogatepass")
+        if language == cs.SupportedLanguage.C and c_preprocessor is not None:
+            return c_preprocessor.expand(path, source)
         return source
     codec = _declared_codec(source, path)
     if codec is None or _is_utf8(codec):

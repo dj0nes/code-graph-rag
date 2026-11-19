@@ -425,6 +425,9 @@ ast-grep = [
     { name = "ast-grep-py" },
     { name = "pyyaml" },
 ]
+c-preprocess = [
+    { name = "pcpp" },
+]
 cpp = [
     { name = "libclang" },
 ]
@@ -445,7 +448,7 @@ semantic = [
     { name = "grpcio" },
     { name = "huggingface-hub", extra = ["hf-xet"] },
     { name = "qdrant-client" },
-    { name = "sqlite-vec", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux') or (platform_machine == 'x86_64' and sys_platform == 'linux') or (platform_machine == 'AMD64' and sys_platform == 'win32') or sys_platform == 'darwin'" },
+    { name = "sqlite-vec", marker = "(platform_machine == 'aarch64' or platform_machine == 'x86_64') and sys_platform == 'linux' or platform_machine == 'AMD64' and sys_platform == 'win32' or sys_platform == 'darwin'" },
     { name = "torch" },
     { name = "transformers" },
 ]
@@ -532,6 +535,7 @@ requires-dist = [
     { name = "neo4j", marker = "extra == 'neo4j'", specifier = ">=5.28.1" },
     { name = "opentelemetry-api", specifier = ">=1.45.2" },
     { name = "pathspec", specifier = ">=1.0.4" },
+    { name = "pcpp", marker = "extra == 'c-preprocess'", specifier = ">=1.30" },
     { name = "prompt-toolkit", specifier = ">=3.0.52" },
     { name = "protobuf", specifier = ">=6.33.5" },
     { name = "pydantic-ai-slim", extras = ["anthropic", "google", "openai"], specifier = ">=2.0.0" },
@@ -551,7 +555,7 @@ requires-dist = [
     { name = "qdrant-client", marker = "extra == 'semantic'", specifier = ">=1.9.0" },
     { name = "regex", specifier = ">=2024.11.6" },
     { name = "rich", specifier = ">=14.2.0" },
-    { name = "sqlite-vec", marker = "(platform_machine == 'aarch64' and sys_platform == 'linux' and extra == 'semantic') or (platform_machine == 'x86_64' and sys_platform == 'linux' and extra == 'semantic') or (platform_machine == 'AMD64' and sys_platform == 'win32' and extra == 'semantic') or (sys_platform == 'darwin' and extra == 'semantic')", specifier = ">=0.1.9" },
+    { name = "sqlite-vec", marker = "(platform_machine == 'aarch64' or platform_machine == 'x86_64') and sys_platform == 'linux' and extra == 'semantic' or platform_machine == 'AMD64' and sys_platform == 'win32' and extra == 'semantic' or sys_platform == 'darwin' and extra == 'semantic'", specifier = ">=0.1.9" },
     { name = "sqlite-vec", marker = "extra == 'sqlite-vec'", specifier = ">=0.1.9" },
     { name = "sqlite-vec", marker = "extra == 'test'", specifier = ">=0.1.9" },
     { name = "testcontainers", marker = "extra == 'test'", specifier = ">=4.9.0" },
@@ -579,7 +583,7 @@ requires-dist = [
     { name = "typer", specifier = ">=0.21.1" },
     { name = "watchdog", specifier = ">=6.0.0" },
 ]
-provides-extras = ["test", "cpp", "memgraph", "neo4j", "treesitter-full", "semantic", "milvus", "sqlite-vec", "ast-grep", "python-semantics"]
+provides-extras = ["test", "cpp", "memgraph", "neo4j", "treesitter-full", "semantic", "milvus", "sqlite-vec", "c-preprocess", "ast-grep", "python-semantics"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -2036,6 +2040,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/5a/82/42f767fc1c1143d6fd36efb827202a2d997a375e160a71eb2888a925aac1/pathspec-1.1.1.tar.gz", hash = "sha256:17db5ecd524104a120e173814c90367a96a98d07c45b2e10c2f3919fff91bf5a", size = 135180, upload-time = "2026-04-27T01:46:08.907Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f1/d9/7fb5aa316bc299258e68c73ba3bddbc499654a07f151cba08f6153988714/pathspec-1.1.1-py3-none-any.whl", hash = "sha256:a00ce642f577bf7f473932318056212bc4f8bfdf53128c78bbd5af0b9b20b189", size = 57328, upload-time = "2026-04-27T01:46:07.06Z" },
+]
+
+[[package]]
+name = "pcpp"
+version = "1.30"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/41/07/876153f611f2c610bdb8f706a5ab560d888c938ea9ea65ed18c374a9014a/pcpp-1.30.tar.gz", hash = "sha256:5af9fbce55f136d7931ae915fae03c34030a3b36c496e72d9636cedc8e2543a1", size = 94283, upload-time = "2021-10-29T13:16:54.565Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/01/ca/ada7f39c5a0977893e0ef809b1617b259b2d76f6382a7abad00dd6d77904/pcpp-1.30-py2.py3-none-any.whl", hash = "sha256:05fe08292b6da57f385001c891a87f40d6aa7f46787b03e8ba326d20a3297c6e", size = 91085, upload-time = "2021-10-29T13:16:51.846Z" },
 ]
 
 [[package]]
